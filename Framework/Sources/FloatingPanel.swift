@@ -527,7 +527,6 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
         animator.addAnimations { [weak self] in
             guard let `self` = self else { return }
             self.layoutAdapter.activateLayout(of: targetPosition)
-            self.layoutAdapter.setBackdropAlpha(of: targetPosition)
             self.state = targetPosition
         }
         animator.addCompletion { [weak self] pos in
