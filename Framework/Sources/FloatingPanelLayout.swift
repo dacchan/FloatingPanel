@@ -148,7 +148,7 @@ class FloatingPanelLayoutAdapter {
     private var halfConstraints: [NSLayoutConstraint] = []
     private var tipConstraints: [NSLayoutConstraint] = []
     private var offConstraints: [NSLayoutConstraint] = []
-    private var interactionTopConstraint: NSLayoutConstraint?
+    private var interactiveTopConstraint: NSLayoutConstraint?
 
     private var heightConstraint: NSLayoutConstraint?
 
@@ -314,12 +314,19 @@ class FloatingPanelLayoutAdapter {
     func startInteraction(at state: FloatingPanelPosition) {
         NSLayoutConstraint.deactivate(fullConstraints + halfConstraints + tipConstraints + offConstraints)
 
-        initialConst = surfaceView.frame.minY - safeAreaInsets.top
-
-        let interactionTopConstraint =  surfaceView.topAnchor.constraint(equalTo: vc.layoutGuide.topAnchor,
-                                                                         constant: surfaceView.frame.minY - safeAreaInsets.top)
-        NSLayoutConstraint.activate([interactionTopConstraint])
-        self.interactionTopConstraint = interactionTopConstraint
+        let interactiveTopConstraint: NSLayoutConstraint
+        switch layout {
+        case is FloatingPanelIntrinsicLayout, is FloatingPanelFullScreenLayout:
+            initialConst = surfaceView.frame.minY
+            interactiveTopConstraint = surfaceView.topAnchor.constraint(equalTo: vc.view.topAnchor,
+                                                                        constant: initialConst)
+        default:
+            initialConst = surfaceView.frame.minY - safeAreaInsets.top
+            interactiveTopConstraint = surfaceView.topAnchor.constraint(equalTo: vc.layoutGuide.topAnchor,
+                                                                        constant: initialConst)
+        }
+        NSLayoutConstraint.activate([interactiveTopConstraint])
+        self.interactiveTopConstraint = interactiveTopConstraint
     }
 
     func endInteraction(at state: FloatingPanelPosition) { }
@@ -361,24 +368,29 @@ class FloatingPanelLayoutAdapter {
         }
     }
 
-    func updateInteractiveTopConstraint(diff: CGFloat, upperBuffer: Bool) {
+    func updateInteractiveTopConstraint(diff: CGFloat) {
         defer {
             surfaceView.superview!.layoutIfNeeded()
         }
-
+        let minY: CGFloat = {
+            switch layout {
+            case is FloatingPanelIntrinsicLayout:
+                return topY - layout.topInteractionBuffer
+            default:
+                return fullInset - layout.topInteractionBuffer
+            }
+        }()
+        let maxY: CGFloat = {
+            switch layout {
+            case is FloatingPanelIntrinsicLayout, is FloatingPanelFullScreenLayout:
+                return bottomY + layout.bottomInteractionBuffer
+            default:
+                return bottomY - safeAreaInsets.top + layout.bottomInteractionBuffer
+            }
+        }()
         let const = initialConst + diff
 
-        let topBuffer = layout.topInteractionBuffer
-        let bottomBuffer = layout.bottomInteractionBuffer
-
-        let filterdConst: CGFloat = {
-            if upperBuffer == false {
-                return max(topY - safeAreaInsets.top, min(bottomY - safeAreaInsets.top, const))
-            }
-            return max(topY - safeAreaInsets.top - topBuffer, min(bottomY - safeAreaInsets.top + bottomBuffer, const))
-        }()
-
-        interactionTopConstraint?.constant = filterdConst
+        interactiveTopConstraint?.constant = max(minY, min(maxY, const))
     }
 
     func activateLayout(of state: FloatingPanelPosition) {
@@ -396,8 +408,8 @@ class FloatingPanelLayoutAdapter {
             state = layout.initialPosition
         }
 
-        if let interactionTopConstraint = interactionTopConstraint {
-            NSLayoutConstraint.deactivate([interactionTopConstraint])
+        if let interactiveTopConstraint = interactiveTopConstraint {
+            NSLayoutConstraint.deactivate([interactiveTopConstraint])
         }
 
         NSLayoutConstraint.deactivate(fullConstraints + halfConstraints + tipConstraints + offConstraints)
