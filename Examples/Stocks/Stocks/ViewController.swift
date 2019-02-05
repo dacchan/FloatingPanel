@@ -109,6 +109,9 @@ class FloatingPanelStocksLayout: FloatingPanelLayout {
     var topInteractionBuffer: CGFloat { return 0.0 }
     var bottomInteractionBuffer: CGFloat { return 0.0 }
 
+//    var supportedPositions: Set<FloatingPanelPosition> { return [.full, .tip] }
+//    var alignment: FloatingPanelAlignment { return .top }
+
     func insetFor(position: FloatingPanelPosition) -> CGFloat? {
         switch position {
         case .full: return 56.0

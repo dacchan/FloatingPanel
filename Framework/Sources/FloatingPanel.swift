@@ -332,8 +332,16 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
         if scrollView.isDecelerating {
             return true
         }
-        if velocity.y < 0 {
-            return true
+
+        switch layoutAdapter.layout.alignment {
+        case .top:
+            if velocity.y > 0 {
+                return true
+            }
+        case .bottom:
+            if velocity.y < 0 {
+                return true
+            }
         }
 
         return false
@@ -445,8 +453,17 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
         viewcontroller.delegate?.floatingPanelWillBeginDragging(viewcontroller)
 
         if state == .full {
-            viewcontroller.contentViewController?.view?.constraints.forEach({ (const) in
-                switch viewcontroller.contentViewController?.layoutGuide.bottomAnchor {
+            // TODO: I will review it later whether it is necessary.
+            let anchor: NSLayoutYAxisAnchor?
+            switch layoutAdapter.layout.alignment {
+            case .top:
+                anchor = viewcontroller.contentViewController?.layoutGuide.topAnchor
+            case .bottom:
+                anchor = viewcontroller.contentViewController?.layoutGuide.bottomAnchor
+            }
+
+            viewcontroller.contentViewController?.view?.constraints.forEach { const in
+                switch anchor {
                 case const.firstAnchor:
                     (const.secondItem as? UIView)?.disableAutoLayout()
                     const.isActive = false
@@ -456,7 +473,7 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
                 default:
                     break
                 }
-            })
+            }
         }
 
         interactionInProgress = true
@@ -504,7 +521,20 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
         }
         let topMax = layoutAdapter.topMaxY
         let bottomMax = layoutAdapter.bottomMaxY
-        return max(max(topY - topBuffer, topMax), min(min(bottomY + bottomBuffer, bottomMax), y))
+
+        switch layoutAdapter.layout.alignment {
+        case .top:
+            let expand = max(topY - topBuffer, topMax)
+            let close = min(max(bottomY + bottomBuffer, bottomMax), y)
+
+            return min(expand, close)
+
+        case .bottom:
+            let expand = max(topY - topBuffer, topMax)
+            let close = min(min(bottomY + bottomBuffer, bottomMax), y)
+
+            return max(expand, close)
+        }
     }
 
     private func startAnimation(to targetPosition: FloatingPanelPosition, at distance: CGFloat, with velocity: CGPoint) {
@@ -740,15 +770,27 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
         switch currentY {
         case ..<th:
             if project(initialVelocity: velocity.y) >= (bottomY - currentY) {
-                return bottom
+                switch layoutAdapter.layout.alignment {
+                case .top: return top
+                case .bottom: return bottom
+                }
             } else {
-                return top
+                switch layoutAdapter.layout.alignment {
+                case .top: return bottom
+                case .bottom: return top
+                }
             }
         default:
             if project(initialVelocity: velocity.y) <= (topY - currentY) {
-                return top
+                switch layoutAdapter.layout.alignment {
+                case .top: return bottom
+                case .bottom: return top
+                }
             } else {
-                return bottom
+                switch layoutAdapter.layout.alignment {
+                case .top: return top
+                case .bottom: return bottom
+                }
             }
         }
     }

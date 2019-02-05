@@ -196,19 +196,36 @@ class FloatingPanelLayoutAdapter {
     }
 
     var middleY: CGFloat {
-        return surfaceView.superview!.bounds.height - (safeAreaInsets.bottom + halfInset)
+        switch layout.alignment {
+        case .top:
+            let middle = surfaceView.superview!.bounds.height - (safeAreaInsets.top + halfInset)
+            return -middle
+        case .bottom:
+            return surfaceView.superview!.bounds.height - (safeAreaInsets.bottom + halfInset)
+        }
     }
 
     var bottomY: CGFloat {
-        if supportedPositions.contains(.tip) {
+        guard supportedPositions.contains(.tip) else { return middleY }
+
+        switch layout.alignment {
+        case .top:
+            let bottom = surfaceView.superview!.bounds.height - (safeAreaInsets.top + tipInset)
+            return -bottom
+        case .bottom:
             return surfaceView.superview!.bounds.height - (safeAreaInsets.bottom + tipInset)
-        } else {
-            return middleY
         }
     }
 
     var hiddenY: CGFloat {
-        return surfaceView.superview!.bounds.height
+        let hidden = surfaceView.superview!.bounds.height
+
+        switch layout.alignment {
+        case .top:
+            return -hidden
+        case .bottom:
+            return hidden
+        }
     }
 
     var safeAreaBottomY: CGFloat {
@@ -216,9 +233,22 @@ class FloatingPanelLayoutAdapter {
     }
 
     var topMaxY: CGFloat {
-        return layout is FloatingPanelFullScreenLayout ? 0.0 : -safeAreaInsets.top
+        switch layout.alignment {
+        case .top:
+            return hiddenY
+        case .bottom:
+            return layout is FloatingPanelFullScreenLayout ? 0.0 : -safeAreaInsets.top
+        }
     }
-    var bottomMaxY: CGFloat { return safeAreaBottomY }
+
+    var bottomMaxY: CGFloat {
+        switch layout.alignment {
+        case .top:
+            return safeAreaInsets.top
+        case .bottom:
+            return safeAreaBottomY
+        }
+    }
 
     var adjustedContentInsets: UIEdgeInsets {
         return UIEdgeInsets(top: 0.0,
@@ -302,18 +332,35 @@ class FloatingPanelLayoutAdapter {
             ]
         }
 
-        halfConstraints = [
-            surfaceView.topAnchor.constraint(equalTo: vc.layoutGuide.bottomAnchor,
-                                             constant: -halfInset),
-        ]
-        tipConstraints = [
-            surfaceView.topAnchor.constraint(equalTo: vc.layoutGuide.bottomAnchor,
-                                             constant: -tipInset),
-        ]
-        offConstraints = [
-            surfaceView.topAnchor.constraint(equalTo: vc.view.bottomAnchor,
-                                             constant: -hiddenInset),
-        ]
+        switch layout.alignment {
+        case .top:
+            halfConstraints = [
+                surfaceView.bottomAnchor.constraint(equalTo: vc.layoutGuide.topAnchor,
+                                                    constant: halfInset),
+            ]
+            tipConstraints = [
+                surfaceView.bottomAnchor.constraint(equalTo: vc.layoutGuide.topAnchor,
+                                                    constant: tipInset),
+            ]
+            offConstraints = [
+                surfaceView.topAnchor.constraint(equalTo: vc.view.bottomAnchor,
+                                                 constant: -hiddenInset),
+            ]
+
+        case .bottom:
+            halfConstraints = [
+                surfaceView.topAnchor.constraint(equalTo: vc.layoutGuide.bottomAnchor,
+                                                 constant: -halfInset),
+            ]
+            tipConstraints = [
+                surfaceView.topAnchor.constraint(equalTo: vc.layoutGuide.bottomAnchor,
+                                                 constant: -tipInset),
+            ]
+            offConstraints = [
+                surfaceView.topAnchor.constraint(equalTo: vc.view.bottomAnchor,
+                                                 constant: -hiddenInset),
+            ]
+        }
     }
 
     // The method is separated from prepareLayout(to:) for the rotation support
@@ -343,7 +390,13 @@ class FloatingPanelLayoutAdapter {
 
         NSLayoutConstraint.activate(heightConstraints)
 
-        surfaceView.bottomOverflow = heightBuffer + layout.topInteractionBuffer
+        switch layout.alignment {
+        case .top:
+            surfaceView.bottomOverflow = 0
+
+        case .bottom:
+            surfaceView.bottomOverflow = heightBuffer + layout.topInteractionBuffer
+        }
 
         if layout is FloatingPanelIntrinsicLayout {
             NSLayoutConstraint.deactivate(fullConstraints)
