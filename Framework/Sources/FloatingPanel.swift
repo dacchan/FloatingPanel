@@ -58,6 +58,12 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
 
         surfaceView = FloatingPanelSurfaceView()
         surfaceView.backgroundColor = .white
+        switch layout.alignment {
+        case .top:
+            surfaceView.grabberHandleAlignment = .bottom
+        case .bottom:
+            surfaceView.grabberHandleAlignment = .top
+        }
 
         backdropView = FloatingPanelBackdropView()
         backdropView.backgroundColor = .black

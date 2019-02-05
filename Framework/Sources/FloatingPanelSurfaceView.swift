@@ -5,6 +5,11 @@
 
 import UIKit
 
+enum GrabberHandleAlignment {
+    case top
+    case bottom
+}
+
 class FloatingPanelSurfaceContentView: UIView {}
 
 /// A view that presents a surface interface in a floating panel.
@@ -15,6 +20,8 @@ public class FloatingPanelSurfaceView: UIView {
     /// To use a custom grabber handle, hide this and then add the custom one
     /// to the surface view at appropirate coordinates.
     public var grabberHandle: GrabberHandleView!
+
+    var grabberHandleAlignment = GrabberHandleAlignment.top
 
     /// The height of the grabber bar area
     public static var topGrabberBarHeight: CGFloat {
@@ -88,8 +95,16 @@ public class FloatingPanelSurfaceView: UIView {
         self.grabberHandle = grabberHandle
 
         grabberHandle.translatesAutoresizingMaskIntoConstraints = false
+        let alignment: NSLayoutConstraint
+        switch grabberHandleAlignment {
+        case .top:
+            alignment = grabberHandle.topAnchor.constraint(equalTo: topAnchor, constant: Default.grabberTopPadding)
+        case .bottom:
+            alignment = grabberHandle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Default.grabberTopPadding)
+        }
+
         NSLayoutConstraint.activate([
-            grabberHandle.topAnchor.constraint(equalTo: topAnchor, constant: Default.grabberTopPadding),
+            alignment,
             grabberHandle.widthAnchor.constraint(equalToConstant: grabberHandle.frame.width),
             grabberHandle.heightAnchor.constraint(equalToConstant: grabberHandle.frame.height),
             grabberHandle.centerXAnchor.constraint(equalTo: centerXAnchor),
