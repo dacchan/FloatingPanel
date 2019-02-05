@@ -36,6 +36,11 @@ public extension FloatingPanelIntrinsicLayout {
     }
 }
 
+public enum FloatingPanelAlignment {
+    case top
+    case bottom
+}
+
 public protocol FloatingPanelLayout: class {
     /// Returns the initial position of a floating panel.
     var initialPosition: FloatingPanelPosition { get }
@@ -52,6 +57,8 @@ public protocol FloatingPanelLayout: class {
 
     /// Return the interaction buffer to the bottom from the bottom position. Default is 6.0.
     var bottomInteractionBuffer: CGFloat { get }
+
+    var alignment: FloatingPanelAlignment { get }
 
     /// Returns a CGFloat value to determine a Y coordinate of a floating panel for each position(full, half, tip and hidden).
     ///
@@ -81,6 +88,8 @@ public extension FloatingPanelLayout {
     var supportedPositions: Set<FloatingPanelPosition> {
         return Set([.full, .half, .tip])
     }
+
+    var alignment: FloatingPanelAlignment { return .bottom }
 
     func prepareLayout(surfaceView: UIView, in view: UIView) -> [NSLayoutConstraint] {
         return [
