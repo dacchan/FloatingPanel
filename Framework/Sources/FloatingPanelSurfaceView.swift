@@ -21,7 +21,12 @@ public class FloatingPanelSurfaceView: UIView {
     /// to the surface view at appropirate coordinates.
     public var grabberHandle: GrabberHandleView!
 
-    var grabberHandleAlignment = GrabberHandleAlignment.top
+    var grabberHandleAlignment = GrabberHandleAlignment.top {
+        didSet {
+            updateGrabberHandleConstraints()
+        }
+    }
+    private var grabberConstraints: [NSLayoutConstraint] = []
 
     /// The height of the grabber bar area
     public static var topGrabberBarHeight: CGFloat {
@@ -94,7 +99,14 @@ public class FloatingPanelSurfaceView: UIView {
         addSubview(grabberHandle)
         self.grabberHandle = grabberHandle
 
+        updateGrabberHandleConstraints()
+    }
+
+    private func updateGrabberHandleConstraints() {
         grabberHandle.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.deactivate(grabberConstraints)
+
         let alignment: NSLayoutConstraint
         switch grabberHandleAlignment {
         case .top:
@@ -103,12 +115,14 @@ public class FloatingPanelSurfaceView: UIView {
             alignment = grabberHandle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Default.grabberTopPadding)
         }
 
-        NSLayoutConstraint.activate([
+        grabberConstraints = [
             alignment,
             grabberHandle.widthAnchor.constraint(equalToConstant: grabberHandle.frame.width),
             grabberHandle.heightAnchor.constraint(equalToConstant: grabberHandle.frame.height),
             grabberHandle.centerXAnchor.constraint(equalTo: centerXAnchor),
-            ])
+        ]
+
+        NSLayoutConstraint.activate(grabberConstraints)
     }
 
     public override func layoutSubviews() {
