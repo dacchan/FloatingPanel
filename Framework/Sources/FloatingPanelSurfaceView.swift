@@ -26,6 +26,7 @@ public class FloatingPanelSurfaceView: UIView {
             updateGrabberHandleConstraints()
         }
     }
+    var grabberHandlePadding: CGFloat = Default.grabberTopPadding
     private var grabberConstraints: [NSLayoutConstraint] = []
 
     /// The height of the grabber bar area
@@ -110,9 +111,9 @@ public class FloatingPanelSurfaceView: UIView {
         let alignment: NSLayoutConstraint
         switch grabberHandleAlignment {
         case .top:
-            alignment = grabberHandle.topAnchor.constraint(equalTo: topAnchor, constant: Default.grabberTopPadding)
+            alignment = grabberHandle.topAnchor.constraint(equalTo: topAnchor, constant: grabberHandlePadding)
         case .bottom:
-            alignment = grabberHandle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -Default.grabberTopPadding)
+            alignment = grabberHandle.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -grabberHandlePadding)
         }
 
         grabberConstraints = [

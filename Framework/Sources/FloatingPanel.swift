@@ -58,6 +58,9 @@ class FloatingPanel: NSObject, UIGestureRecognizerDelegate, UIScrollViewDelegate
 
         surfaceView = FloatingPanelSurfaceView()
         surfaceView.backgroundColor = .white
+        if let grabberHandlePadding = layout.grabberHandlePadding {
+            surfaceView.grabberHandlePadding = grabberHandlePadding
+        }
         switch layout.alignment {
         case .top:
             surfaceView.grabberHandleAlignment = .bottom

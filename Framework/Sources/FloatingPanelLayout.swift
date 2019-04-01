@@ -59,6 +59,7 @@ public protocol FloatingPanelLayout: class {
     var bottomInteractionBuffer: CGFloat { get }
 
     var alignment: FloatingPanelAlignment { get }
+    var grabberHandlePadding: CGFloat? { get }
 
     /// Returns a CGFloat value to determine a Y coordinate of a floating panel for each position(full, half, tip and hidden).
     ///
@@ -90,6 +91,7 @@ public extension FloatingPanelLayout {
     }
 
     var alignment: FloatingPanelAlignment { return .bottom }
+    var grabberHandlePadding: CGFloat? { return nil }
 
     func prepareLayout(surfaceView: UIView, in view: UIView) -> [NSLayoutConstraint] {
         return [
@@ -101,6 +103,7 @@ public extension FloatingPanelLayout {
     func backdropAlphaFor(position: FloatingPanelPosition) -> CGFloat {
         return position == .full ? 0.3 : 0.0
     }
+    
 }
 
 public class FloatingPanelDefaultLayout: FloatingPanelLayout {

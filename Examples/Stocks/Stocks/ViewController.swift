@@ -22,8 +22,7 @@ class ViewController: UIViewController, FloatingPanelControllerDelegate {
         super.viewDidLoad()
         initialColor = view.backgroundColor!
         // Initialize FloatingPanelController
-        fpc = FloatingPanelController()
-        fpc.delegate = self
+        fpc = FloatingPanelController(delegate: self)
 
         // Initialize FloatingPanelController and add the view
         fpc.surfaceView.backgroundColor = UIColor(displayP3Red: 30.0/255.0, green: 30.0/255.0, blue: 30.0/255.0, alpha: 1.0)
@@ -111,6 +110,14 @@ class FloatingPanelStocksLayout: FloatingPanelLayout {
 
 //    var supportedPositions: Set<FloatingPanelPosition> { return [.full, .tip] }
 //    var alignment: FloatingPanelAlignment { return .top }
+    var grabberHandlePadding: CGFloat? {
+        switch alignment {
+        case .top:
+            return 26
+        case .bottom:
+            return nil
+        }
+    }
 
     func insetFor(position: FloatingPanelPosition) -> CGFloat? {
         switch position {
